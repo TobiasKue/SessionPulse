@@ -1,0 +1,47 @@
+name: Bug report
+description: Something does not work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check docs/LESSONS.md and the troubleshooting section of the README first.
+        **Do not paste conversation content, e-mail addresses or session ids.**
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options:
+        - Claude plugin (hook, status files)
+        - Keypad plugin (keys, folders)
+        - Scheduled tasks
+        - Dictation
+        - Installation / packaging
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: SessionPulse, Windows, Logi Options+ / Logi Plugin Service, Claude Desktop
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log excerpt
+      description: |
+        Plugin log: %LOCALAPPDATA%\Logi\LogiPluginService\Logs\plugin_logs\ (set VERBOSE=1 in sessionpulse.conf for more).
+        Please remove anything personal.
+      render: text

@@ -1,0 +1,14 @@
+# Haptic events (Logi Actions SDK, csharp/haptics/haptics-getting-started.md).
+# Raised by SessionPulsePlugin; waveforms in extra/eventMapping.yaml. Switch off with HAPTICS=0.
+displayName: SessionPulse
+description: Haptic feedback when a Claude session needs you or finishes
+events:
+    - name: sessionWaiting
+      displayName: Session waiting for you
+      description: A Claude session asks a question or waits for your input
+    - name: approvalRequested
+      displayName: Approval requested
+      description: A Claude session waits for a permission decision on the keypad
+    - name: sessionDone
+      displayName: Session finished
+      description: A Claude session finished its turn

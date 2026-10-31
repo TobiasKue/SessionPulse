@@ -1,0 +1,11 @@
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+*.lplug4
+*.link
+TestResults/

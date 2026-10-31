@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Platform- and SDK-free logic. Must not reference PluginApi so that it builds and tests anywhere. -->
+  <PropertyGroup>
+    <RootNamespace>SessionPulse.Core</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SessionPulse.Core.Tests" />
+  </ItemGroup>
+
+</Project>

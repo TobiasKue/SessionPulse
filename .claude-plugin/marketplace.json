@@ -1,0 +1,14 @@
+{
+  "name": "sessionpulse",
+  "description": "SessionPulse: session status for the Logitech MX Creative Keypad",
+  "owner": {
+    "name": "Tobias Küpers"
+  },
+  "plugins": [
+    {
+      "name": "sessionpulse",
+      "source": "./claude-plugin",
+      "description": "Writes a small local status file per session (no network, no conversation content)"
+    }
+  ]
+}

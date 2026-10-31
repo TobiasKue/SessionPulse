@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows matters most: there the hook runs in Git Bash (docs/LESSONS.md).
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Check hook script line endings
+        run: |
+          if grep -l $'\r' claude-plugin/hooks/scripts/*.sh; then
+            echo "CRLF line endings found; the hook would break in Git Bash"; exit 1
+          fi
+
+      - name: ShellCheck
+        if: runner.os == 'Linux'
+        run: shellcheck claude-plugin/hooks/scripts/status.sh tests/hook/run.sh
+
+      - name: Hook tests
+        run: bash tests/hook/run.sh
+        env:
+          # Process start-up is much slower in Git Bash; the limit only catches regressions.
+          HOOK_MAX_AVG_MS: ${{ runner.os == 'Windows' && '400' || '150' }}
+
+      - name: Build and test (.NET)
+        run: dotnet test --configuration Release
+
+      # The plugin is not in the solution, so that a local `dotnet test` doesn't touch the
+      # development .link file. It needs its own build here.
+      - name: Build, pack and verify the keypad plugin
+        run: |
+          dotnet build src/SessionPulsePlugin --configuration Release -p:DevLink=false
+          dotnet tool restore
+          dotnet logiplugintool pack artifacts/plugin/Release/ artifacts/SessionPulse.lplug4
+          dotnet logiplugintool verify artifacts/SessionPulse.lplug4

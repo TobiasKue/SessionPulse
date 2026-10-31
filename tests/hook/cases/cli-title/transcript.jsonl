@@ -1,0 +1,4 @@
+{"type":"user","message":{"role":"user","content":"Please look at the \"aiTitle\": field handling"},"sessionId":"cli-0001"}
+{"type":"ai-title","aiTitle":"Kurzer Plugin-Funktionstest","sessionId":"cli-0001"}
+{"type":"assistant","message":{"content":[{"type":"text","text":"ok"}]},"sessionId":"cli-0001"}
+{"type":"custom-title","customTitle":"Fix \"login\" f\u00fcr Keypad","sessionId":"cli-0001"}

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Renders sample session keys to PNG files with the real SDK drawing code, so key layouts can be checked
+    without a device or Options+. Development tool only: unlike the plugin, it uses the LogiPluginApi runtime
+    assembly (the service provides it to real plugins) plus SkiaSharp's native library.
+
+      Usage: dotnet run with project tools/KeyPreview, optional argument: output directory.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Loupedeck.SessionPulsePlugin</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LogiPluginApi" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Condition="!$([MSBuild]::IsOSPlatform('Windows')) and !$([MSBuild]::IsOSPlatform('OSX'))" />
+    <ProjectReference Include="..\..\src\SessionPulse.Core\SessionPulse.Core.csproj" />
+    <Compile Include="..\..\src\SessionPulsePlugin\Rendering\**\*.cs" Link="Rendering\%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\src\SessionPulsePlugin\Rendering\Icons\**\*" Link="Rendering\Icons\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Target Name="DropTransitiveStyleCop" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Analyzer.NuGetPackageId)' == 'StyleCop.Analyzers'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

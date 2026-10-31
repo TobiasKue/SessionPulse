@@ -1,0 +1,11 @@
+{
+  "name": "sessionpulse",
+  "displayName": "SessionPulse",
+  "version": "0.1.0",
+  "description": "Writes a small local status file per session so that a keypad (or any other tool) can show which sessions are working, waiting or done. No network access, no conversation content.",
+  "author": {
+    "name": "Tobias Küpers"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "keywords": ["status", "hooks", "keypad", "logitech", "mx-creative-console"]
+}

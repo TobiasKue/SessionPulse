@@ -1,0 +1,12 @@
+* text=auto
+
+# The hook runs in Git Bash on Windows; CRLF line endings would break it.
+*.sh   text eol=lf
+*.conf text eol=lf
+tests/hook/cases/** text eol=lf
+
+*.png  binary
+
+# Deliberately contains a CR: tests that the hook tolerates Windows line endings in the config.
+tests/hook/cases/cowork-labels-off/sessionpulse.conf -text
+*.ps1  text eol=crlf

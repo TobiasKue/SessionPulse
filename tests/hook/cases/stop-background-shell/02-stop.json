@@ -1,0 +1,1 @@
+{"session_id":"code-0043","cwd":"/home/user/projects/demo","hook_event_name":"Stop","last_assistant_message":"x","background_tasks": [{"id":"t","type": "shell","status":"running","command":"npm run dev"},{"id":"m","type":"monitor","status":"running"},{"id":"p","type":"teammate","status":"running"}],"session_crons":[{"id":"c","schedule":"0 9 * * *","recurring":true,"prompt":"x"}]}

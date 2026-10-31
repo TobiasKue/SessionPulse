@@ -1,0 +1,35 @@
+# Plugin configuration (Logi Actions SDK, csharp/tutorial/plugin-structure.md).
+# @VERSION@ is replaced at build time from Directory.Build.props (SessionPulsePlugin.csproj).
+# Keep this file free of semicolons: MSBuild would split the text there.
+
+type: plugin4
+
+# Unique id. Must not change after a Marketplace release and must not end in "Plugin".
+name: SessionPulse
+displayName: SessionPulse
+description: Live status of your Claude sessions (Claude Code in Claude Desktop, a terminal or WSL, and Cowork where it runs locally). See which sessions are working, waiting for you or done, and open one with a key press.
+
+pluginFileName: SessionPulsePlugin.dll
+version: @VERSION@
+
+author: Tobias Küpers
+copyright: Copyright (c) 2026 Tobias Küpers
+
+# Windows only for now (docs/architecture.md). Add pluginFolderMac once macOS is supported.
+pluginFolderWin: bin
+
+# The docs list no device id for the MX Creative Keypad. LoupedeckCtFamily is the generator default
+# and worked for the prototype on the Keypad (docs/LESSONS.md #25). The device test plan checks it.
+supportedDevices:
+    - LoupedeckCtFamily
+
+# Universal plugin without shortcuts (no HasApplication, no ActivatesApplication).
+# HasHapticMapping enables events/extra/eventMapping.yaml (MX Master 4 haptics).
+pluginCapabilities:
+    - HasHapticMapping
+
+# LogiPluginApi 6.4 requires Logi Plugin Service 6.4 or later.
+minimumLoupedeckVersion: 6.4
+
+license: MIT with Commons Clause
+licenseUrl: https://commonsclause.com/

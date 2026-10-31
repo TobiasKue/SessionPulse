@@ -1,0 +1,1 @@
+{"session_id":"code-0001","transcript_path":"/home/user/.claude/projects/demo/s.jsonl","permission_mode":"default","cwd":"/home/user/projects/demo","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"npm test"},"tool_response":{"stdout":"ok"},"tool_use_id":"toolu_01","duration_ms":12}

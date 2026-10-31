@@ -1,0 +1,10 @@
+<Project>
+  <!-- All package versions are pinned here (central package management). -->
+  <ItemGroup>
+    <!-- Logi Plugin API 6.4: net10.0, requires Logi Plugin Service 6.4+ at runtime. -->
+    <PackageVersion Include="LogiPluginApi" Version="6.4.2.3567" />
+    <!-- Only for tools/KeyPreview: SkiaSharp native library matching LogiPluginApi's SkiaSharp 2.88.8. -->
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+  </ItemGroup>
+</Project>

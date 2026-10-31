@@ -1,0 +1,91 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Logi Actions plugin. Based on the project that `logiplugintool generate` (6.4.2.3599) creates, with
+    these differences:
+      * LogiPluginApi is pinned (Directory.Packages.props) instead of 6.*.
+      * Output goes to artifacts/plugin/<Configuration>/ (bin/ + metadata/), ready for `logiplugintool pack`.
+      * LoupedeckPackage.yaml gets its version from this project (docs/LESSONS.md: unique version per build).
+      * The development .link file and the service reload only happen with DevLink=true, which is the
+        default only for local Windows builds. CI and release builds pass -p:DevLink=false.
+  -->
+  <PropertyGroup>
+    <RootNamespace>Loupedeck.SessionPulsePlugin</RootNamespace>
+    <AssemblyName>SessionPulsePlugin</AssemblyName>
+    <Nullable>enable</Nullable>
+    <!-- LibraryImport (Win32 calls) generates unsafe marshalling code. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Only our own assemblies go into the package; the service provides PluginApi and its dependencies. -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <PluginShortName>SessionPulse</PluginShortName>
+    <PluginPackageDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\artifacts\plugin\$(Configuration)\'))</PluginPackageDir>
+    <OutputPath>$(PluginPackageDir)bin\</OutputPath>
+
+    <DevLink Condition="'$(DevLink)' == '' and '$(OS)' == 'Windows_NT' and '$(CI)' != 'true'">true</DevLink>
+    <PluginDir Condition="'$(OS)' == 'Windows_NT'">$(LocalAppData)\Logi\LogiPluginService\Plugins\</PluginDir>
+    <PluginDir Condition="'$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/Logi/LogiPluginService/Plugins/</PluginDir>
+
+    <!-- Package version: major.minor.build, decimal parts only (Logi docs). Local builds get a unique build number. -->
+    <ReleasePackage Condition="'$(ReleasePackage)' == ''">false</ReleasePackage>
+    <_VersionMajor>$([System.Version]::Parse('$(VersionPrefix)').Major)</_VersionMajor>
+    <_VersionMinor>$([System.Version]::Parse('$(VersionPrefix)').Minor)</_VersionMinor>
+    <_DevBuildNumber>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::new(2026, 1, 1))).TotalMinutes)))</_DevBuildNumber>
+    <PluginPackageVersion Condition="'$(ReleasePackage)' == 'true'">$(VersionPrefix)</PluginPackageVersion>
+    <PluginPackageVersion Condition="'$(ReleasePackage)' != 'true'">$(_VersionMajor).$(_VersionMinor).$(_DevBuildNumber)</PluginPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LogiPluginApi" ExcludeAssets="runtime;native" />
+    <ProjectReference Include="..\SessionPulse.Core\SessionPulse.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Icon artwork (SVG/PNG) used by the key renderer, embedded into the assembly. -->
+    <EmbeddedResource Include="Rendering\Icons\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- UI Automation helper scripts (scroll to top, dictation), shipped as bin/Scripts/*.ps1. -->
+    <None Include="Scripts\*.ps1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="package\**" />
+    <PackageFiles Include="package\**\*" Exclude="package\metadata\LoupedeckPackage.yaml" />
+    <PackageFiles Include="..\..\LICENSE" />
+  </ItemGroup>
+
+  <!--
+    LogiPluginApi brings StyleCop.Analyzers along as a dependency. Those are Logitech's style rules, not ours
+    (see .editorconfig), and with TreatWarningsAsErrors they would fail the build. Drop just that analyzer.
+  -->
+  <Target Name="DropTransitiveStyleCop" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Analyzer.NuGetPackageId)' == 'StyleCop.Analyzers'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyPluginPackage" AfterTargets="Build">
+    <Copy SourceFiles="@(PackageFiles)" DestinationFolder="$(PluginPackageDir)%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <WriteLinesToFile
+      File="$(PluginPackageDir)metadata\LoupedeckPackage.yaml"
+      Lines="$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)package\metadata\LoupedeckPackage.yaml').Replace('@VERSION@', '$(PluginPackageVersion)'))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <Message Text="SessionPulse plugin package $(PluginPackageVersion) -> $(PluginPackageDir)" Importance="High" />
+  </Target>
+
+  <Target Name="WriteDevLink" AfterTargets="CopyPluginPackage" Condition="'$(DevLink)' == 'true'">
+    <WriteLinesToFile File="$(PluginDir)$(AssemblyName).link" Lines="$(PluginPackageDir)" Overwrite="true" />
+    <Message Text="Development link: $(PluginDir)$(AssemblyName).link (remove it before installing a .lplug4, docs/LESSONS.md)" Importance="High" />
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="start loupedeck:plugin/$(PluginShortName)/reload" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="RemoveDevLink" AfterTargets="CoreClean" Condition="'$(DevLink)' == 'true'">
+    <Delete Files="$(PluginDir)$(AssemblyName).link" />
+  </Target>
+
+</Project>

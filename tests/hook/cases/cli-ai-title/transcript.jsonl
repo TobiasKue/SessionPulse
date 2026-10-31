@@ -1,0 +1,3 @@
+{"type":"user","message":{"role":"user","content":"Check the keypad"},"sessionId":"cli-0003"}
+{"type":"ai-title","aiTitle":"First generated title","sessionId":"cli-0003"}
+{"type":"ai-title","aiTitle":"Keypad-Funktionstest","sessionId":"cli-0003"}

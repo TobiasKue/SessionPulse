@@ -1,0 +1,12 @@
+haptics:
+    # Needs your attention, but no alarm.
+    sessionWaiting:
+        DEFAULT: knock
+
+    # Claude is blocked until you decide.
+    approvalRequested:
+        DEFAULT: ringing
+
+    # A task has finished.
+    sessionDone:
+        DEFAULT: completed

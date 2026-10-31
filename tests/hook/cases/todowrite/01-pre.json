@@ -1,0 +1,1 @@
+{"session_id":"code-0012","cwd":"/home/user/projects/demo","hook_event_name":"PreToolUse","tool_name":"TodoWrite","tool_input":{"todos":[{"content":"a \"status\":\"completed\"","status":"completed","activeForm":"A"},{"content":"b","status":"in_progress","activeForm":"B"},{"content":"c","status":"pending","activeForm":"C"}]}}
