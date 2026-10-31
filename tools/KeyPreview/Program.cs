@@ -7,6 +7,12 @@ using SessionPulse.Core.Usage;
 
 // Renders every key state, tile and size (plus a second frame of animated states) to PNG files.
 // Fails (exit code 1) if any key cannot be drawn, so CI can use it as a smoke test.
+// With --readme <directory> it renders the simulated keypad pictures for the README instead.
+if (args.Length == 2 && args[0] == "--readme")
+{
+    return KeypadMockups.Write(args[1]);
+}
+
 var output = args.Length > 0 ? args[0] : Path.Combine("artifacts", "key-preview");
 Directory.CreateDirectory(output);
 foreach (var old in Directory.GetFiles(output, "*.png"))

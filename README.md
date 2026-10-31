@@ -1,6 +1,18 @@
-# SessionPulse
+<p align="center">
+  <img src="src/SessionPulsePlugin/package/metadata/Icon256x256.png" alt="SessionPulse icon" width="128">
+</p>
 
-Live status of your Claude sessions on the Logitech MX Creative Keypad.
+<h1 align="center">SessionPulse</h1>
+
+<p align="center">Live status of your Claude sessions on the Logitech MX Creative Keypad.</p>
+
+<p align="center">
+  <img src="docs/images/keypad-sessions.png" alt="Simulated keypad with session keys showing working, waiting, done and stuck sessions, and counters for each group" width="360">
+  &nbsp;&nbsp;
+  <img src="docs/images/keypad-approval.png" alt="Simulated keypad with a risky permission request and the keys to allow or deny it" width="360">
+</p>
+
+<p align="center"><em>Simulated pictures with made-up sessions, drawn with the plugin's real key renderer. Left: your sessions at a glance. Right: answering a permission request (optional).</em></p>
 
 SessionPulse shows on the keypad's LCD keys which of your Claude Code sessions
 are working, which are waiting for you and which are done: in the Claude
@@ -253,7 +265,8 @@ dotnet run --project tools/KeyPreview
 
 `tools/KeyPreview` renders every key state to PNG files in
 `artifacts/key-preview/` with the SDK's real drawing code, on any OS and
-without a device.
+without a device. `dotnet run --project tools/KeyPreview -- --readme docs/images`
+renders the keypad pictures at the top of this file.
 
 The hook tests replay event sequences (`tests/hook/cases/`; built from the
 documented payloads, `recorded-*` cases are anonymized real recordings) and
