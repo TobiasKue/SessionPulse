@@ -10,7 +10,7 @@ internal sealed record FolderItem(string Parameter, KeyModel? Model, string? Act
 /// <summary>What the folder's own tile (the key that opens it) shows.</summary>
 internal sealed record TileState(TileIcon Icon, int? Count, string Label, bool Active)
 {
-    public bool IsAnimated => this.Active && this.Icon is TileIcon.Working or TileIcon.Waiting or TileIcon.Microphone or TileIcon.Approvals;
+    public bool IsAnimated => this.Active && this.Icon is TileIcon.Working or TileIcon.Waiting or TileIcon.Microphone or TileIcon.Approvals or TileIcon.Calendar;
 }
 
 /// <summary>What changed during a tick, to be reported to the service outside the plugin lock.</summary>

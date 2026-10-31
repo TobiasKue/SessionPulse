@@ -19,6 +19,16 @@ are working, which are waiting for you and which are done: in the Claude
 Desktop app, in a terminal on Windows and in WSL. Pressing a key opens exactly
 that session.
 
+**One keypad for all your Claude Code sessions, wherever they run.** Use them
+side by side and see them together on the same keys:
+
+* **Claude Code in Claude Desktop** (the Code tab)
+* **Claude CLI on Windows**
+* **Claude CLI in WSL**
+
+You don't have to think about where a session lives: a key press takes you to
+it, in Claude Desktop or in its terminal.
+
 > **Status: early development.** All planned features are implemented. Testing
 > on a real device has started but is not finished, so expect rough edges. See
 > [the milestones](#roadmap) and the [device test plan](docs/device-test-plan.md).
@@ -172,7 +182,7 @@ Each session key shows a round state badge at the top left, the main signal:
 | red exclamation mark | stopped by an error or a usage limit |
 
 Next to it the running time, at the top right the source (briefcase = Cowork,
-terminal = Claude Code; a blue dot instead marks an unread scheduled run), then
+terminal = Claude Code; a yellow dot instead marks an unread scheduled run), then
 the session title and, if the session has a task list, a progress bar. The
 title is the one Claude shows: from Claude Desktop, or for sessions in a
 terminal the title Claude Code generated (or the one you set with `/rename`);
@@ -279,9 +289,9 @@ test that parses those golden files, so hook and plugin can't drift apart.
 |---|---|---|
 | M0 | Repository, docs, CI | done |
 | M1 | Hook and status file with tests | done |
-| M2 | Keypad plugin with session keys | built, device test in progress |
-| M3 | Counter folders (working / waiting / done) | built, device test pending |
-| M4 | Scheduled tasks | built, device test pending |
+| M2 | Keypad plugin with session keys | done |
+| M3 | Counter folders (working / waiting / done) | done |
+| M4 | Scheduled tasks | done |
 | M5 | Dictation (optional, Windows only) | built, device test pending |
 | M6 | Release pipeline | done ([docs/releasing.md](docs/releasing.md)) |
 

@@ -173,7 +173,7 @@ Please add to this file when you find something new.
     (`PluginDynamicCommand`) don't get it, even with the same image. The Logi
     Actions SDK docs don't mention it
     (`csharp/plugin-features/implementing-dynamic-folders.md`). Seen in the
-    Options+ device view; not yet checked on the keypad's LCD. Keep the top
+    Options+ device view; on the keypad's LCD it is about half as high. Keep the top
     center of folder images empty; our counter tiles put the badge top left.
 
 ## PowerShell / UI Automation

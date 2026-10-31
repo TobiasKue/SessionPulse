@@ -68,6 +68,9 @@ All notable changes to this project are documented here. The format follows
   larger number, so the white tab Options+ draws on folder keys no longer
   covers the badge.
 
+- Unread scheduled runs ask for attention: the folder key is yellow and pulses
+  like a waiting session, and the marker on the run's key is yellow, not blue.
+
 ### Fixed
 
 - A session whose main agent has finished stays "working" while background

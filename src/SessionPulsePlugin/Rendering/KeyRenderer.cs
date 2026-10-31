@@ -276,9 +276,9 @@ internal sealed class KeyRenderer
         var accent = icon switch
         {
             TileIcon.Working => Icons.Colors.Blue,
-            TileIcon.Waiting or TileIcon.Next or TileIcon.Approvals => Icons.Colors.Amber,
+            TileIcon.Waiting or TileIcon.Next or TileIcon.Approvals or TileIcon.Calendar => Icons.Colors.Amber,
             TileIcon.Done or TileIcon.Allow or TileIcon.AllowAlways => Icons.Colors.Green,
-            TileIcon.Calendar or TileIcon.AllowSession => Icons.Colors.Blue,
+            TileIcon.AllowSession => Icons.Colors.Blue,
             TileIcon.Deny => Icons.Colors.Red,
             TileIcon.AskInClaude => Icons.Colors.Gray,
             _ => active ? Icons.Colors.Red : Icons.Colors.Gray,
@@ -304,7 +304,7 @@ internal sealed class KeyRenderer
 
         var background = icon switch
         {
-            TileIcon.Waiting or TileIcon.Approvals => Style.For(KeyState.Waiting, frame).Background,
+            TileIcon.Waiting or TileIcon.Approvals or TileIcon.Calendar => Style.For(KeyState.Waiting, frame).Background,
             TileIcon.Microphone when active => frame % 2 == 0 ? new BitmapColor(58, 14, 14) : new BitmapColor(92, 20, 20),
             _ => BaseBackground,
         };

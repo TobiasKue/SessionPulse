@@ -104,7 +104,7 @@ internal static class Icons
         + $"<path d=\"M3 12.2h18\" stroke=\"{Colors.DarkGray}\" stroke-width=\"1.4\"/>";
 
     /// <summary>Unread marker: blue dot with a dark ring so it stands out on any background.</summary>
-    public static string UnreadDot => $"<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"{Colors.Glyph}\"/><circle cx=\"12\" cy=\"12\" r=\"7.5\" fill=\"{Colors.Blue}\"/>";
+    public static string UnreadDot => $"<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"{Colors.Glyph}\"/><circle cx=\"12\" cy=\"12\" r=\"7.5\" fill=\"{Colors.Amber}\"/>";
 
     /// <summary>A rounded bar, used for chips and the progress track (stretched to any aspect ratio).</summary>
     public static BitmapImage Pill(string color, double opacity, int width, int height)

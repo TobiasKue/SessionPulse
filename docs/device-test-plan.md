@@ -84,8 +84,8 @@ Tick the boxes, and write anything unexpected into **Findings** at the end
 
 ## 5. Scheduled tasks
 
-- [ ] Assign "Scheduled tasks". After a scheduled run: count 1, blue dot on the
-      run's key, unread runs first.
+- [ ] Assign "Scheduled tasks". After a scheduled run: count 1, the folder key
+      is yellow and pulses, yellow dot on the run's key, unread runs first.
 - [ ] Title is the run's title (or an earlier run's title while the new run is
       still unnamed), never `<scheduled-task ...`.
 - [ ] Press the run: it opens, **scrolls to the top**, the dot disappears.

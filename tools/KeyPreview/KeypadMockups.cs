@@ -40,7 +40,8 @@ internal static class KeypadMockups
             Tile(TileIcon.Working, 2, en.Group(SessionGroup.Working)),
             Tile(TileIcon.Waiting, 2, en.Group(SessionGroup.Waiting)),
             Tile(TileIcon.Done, 1, en.Group(SessionGroup.Done)),
-        ]);
+        ],
+        folderKeys: [6, 7, 8]);
 
         var request = new PendingApproval("r1", "s1", "Bash", "rm -rf build/ && npm run build", ApprovalRisk.High, true, 0, 0);
         Save(output, "keypad-approval.png",
@@ -60,7 +61,7 @@ internal static class KeypadMockups
         return 0;
     }
 
-    private static void Save(string output, string name, BitmapImage?[] keys)
+    private static void Save(string output, string name, BitmapImage?[] keys, int[]? folderKeys = null)
     {
         var size = (2 * Margin) + (3 * Key) + (2 * Gap);
         using var surface = SKSurface.Create(new SKImageInfo(size, size, SKColorType.Rgba8888, SKAlphaType.Premul));
@@ -72,6 +73,7 @@ internal static class KeypadMockups
 
         using var clip = new SKPaint { IsAntialias = true, FilterQuality = SKFilterQuality.High };
         using var blank = new SKPaint { Color = new SKColor(0x0D, 0x11, 0x17), IsAntialias = true };
+        using var tab = new SKPaint { Color = SKColors.White, IsAntialias = true };
         for (var i = 0; i < keys.Length; i++)
         {
             var x = Margin + ((i % 3) * (Key + Gap));
@@ -87,6 +89,15 @@ internal static class KeypadMockups
             else
             {
                 canvas.DrawRect(rect, blank);
+            }
+
+            if (folderKeys?.Contains(i) == true)
+            {
+                // Options+ draws this white tab over folder keys; the plugin's images don't contain it (docs/LESSONS.md #45).
+                var tabWidth = Key * 0.35f;
+                var tabHeight = Key * 0.075f;
+                var left = x + ((Key - tabWidth) / 2);
+                canvas.DrawRoundRect(new SKRect(left, y - tabHeight, left + tabWidth, y + tabHeight), 6, 6, tab);
             }
 
             canvas.Restore();
