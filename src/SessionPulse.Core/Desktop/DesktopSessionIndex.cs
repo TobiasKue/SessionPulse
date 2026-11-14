@@ -1,8 +1,11 @@
+using SessionPulse.Core.Config;
+
 namespace SessionPulse.Core.Desktop;
 
 /// <summary>
 /// Index of Claude Desktop sessions by cliSessionId (= hook session_id). Layout on Windows:
-/// %LOCALAPPDATA%\Claude-Data\claude_*\{local-agent-mode-sessions|claude-code-sessions}\&lt;account&gt;\&lt;org&gt;\local_*.json
+/// %LOCALAPPDATA%\Claude-Data\claude_*\{local-agent-mode-sessions|claude-code-sessions}\&lt;account&gt;\&lt;org&gt;\local_*.json,
+/// on macOS without the claude_* level: ~/Library/Application Support/Claude/{...}/&lt;account&gt;/&lt;org&gt;/local_*.json
 /// Rescans at most every <see cref="MinRescanInterval"/> and only re-reads files whose time stamp changed.
 /// </summary>
 public sealed class DesktopSessionIndex
@@ -29,8 +32,17 @@ public sealed class DesktopSessionIndex
         this.time = time;
     }
 
-    public static string? DefaultDataRoot(Func<string, string?> getEnvironmentVariable)
+    public static string? DefaultDataRoot(Func<string, string?> getEnvironmentVariable) =>
+        DefaultDataRoot(StatusPaths.CurrentPlatform, getEnvironmentVariable);
+
+    public static string? DefaultDataRoot(HostPlatform platform, Func<string, string?> getEnvironmentVariable)
     {
+        if (platform == HostPlatform.MacOS)
+        {
+            var home = getEnvironmentVariable("HOME");
+            return string.IsNullOrEmpty(home) ? null : Path.Combine(home, "Library", "Application Support", "Claude");
+        }
+
         var local = getEnvironmentVariable("LOCALAPPDATA");
         return string.IsNullOrEmpty(local) ? null : Path.Combine(local, "Claude-Data");
     }
@@ -99,7 +111,8 @@ public sealed class DesktopSessionIndex
 
     private IEnumerable<(string Path, DesktopSessionKind Kind)> EnumerateMetadataFiles()
     {
-        foreach (var install in SafeDirectories(this.dataRoot!, "claude_*"))
+        // Windows: one claude_* folder per installation. macOS: the kind folders are right in the data root.
+        foreach (var install in SafeDirectories(this.dataRoot!, "claude_*").Prepend(this.dataRoot!))
         {
             foreach (var (folder, kind) in KindFolders)
             {

@@ -46,13 +46,14 @@ so each can be developed, tested and released on its own.
 * **Own build rules for the plugin project.** It starts from the
   `logiplugintool generate` template but pins `LogiPluginApi`, copies only our
   own assemblies, writes the package version into `LoupedeckPackage.yaml` and
-  only creates the development `.link` file on local Windows builds.
+  only creates the development `.link` file on local Windows and macOS builds.
 * **Logic outside the plugin project.** `SessionPulse.Core` has no reference
   to the Logi Plugin API, so CI and contributors on any OS can build and test
   it. The plugin project stays a thin adapter.
 * **Platform behind interfaces.** Paths, window focus, opening URIs and UI
   Automation live behind interfaces in Core with a Windows implementation in
-  the plugin, so macOS can be added later.
+  the plugin. macOS has its own window activator (ps, `open`, AppleScript for
+  Terminal and iTerm2 tabs); dictation and scroll-to-top stay Windows only.
 * **Target framework net10.0.** Logi Plugin Service 6.4 hosts .NET 10
   (`LogiPluginApi` 6.4.2.3567 release notes: "Targets .NET 10 and requires Logi
   Plugin Service 6.4 or later at runtime"). Code loaded into the service must

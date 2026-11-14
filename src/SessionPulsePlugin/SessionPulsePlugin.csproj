@@ -7,7 +7,7 @@
       * Output goes to artifacts/plugin/<Configuration>/ (bin/ + metadata/), ready for `logiplugintool pack`.
       * LoupedeckPackage.yaml gets its version from this project (docs/LESSONS.md: unique version per build).
       * The development .link file and the service reload only happen with DevLink=true, which is the
-        default only for local Windows builds. CI and release builds pass -p:DevLink=false.
+        default only for local Windows and macOS builds. CI and release builds pass -p:DevLink=false.
   -->
   <PropertyGroup>
     <RootNamespace>Loupedeck.SessionPulsePlugin</RootNamespace>
@@ -24,7 +24,7 @@
     <PluginPackageDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\artifacts\plugin\$(Configuration)\'))</PluginPackageDir>
     <OutputPath>$(PluginPackageDir)bin\</OutputPath>
 
-    <DevLink Condition="'$(DevLink)' == '' and '$(OS)' == 'Windows_NT' and '$(CI)' != 'true'">true</DevLink>
+    <DevLink Condition="'$(DevLink)' == '' and ('$(OS)' == 'Windows_NT' or $([MSBuild]::IsOSPlatform('OSX'))) and '$(CI)' != 'true'">true</DevLink>
     <PluginDir Condition="'$(OS)' == 'Windows_NT'">$(LocalAppData)\Logi\LogiPluginService\Plugins\</PluginDir>
     <PluginDir Condition="'$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/Logi/LogiPluginService/Plugins/</PluginDir>
 
@@ -82,6 +82,7 @@
     <WriteLinesToFile File="$(PluginDir)$(AssemblyName).link" Lines="$(PluginPackageDir)" Overwrite="true" />
     <Message Text="Development link: $(PluginDir)$(AssemblyName).link (remove it before installing a .lplug4, docs/LESSONS.md)" Importance="High" />
     <Exec Condition="'$(OS)' == 'Windows_NT'" Command="start loupedeck:plugin/$(PluginShortName)/reload" ContinueOnError="true" />
+    <Exec Condition="$([MSBuild]::IsOSPlatform('OSX'))" Command="open loupedeck:plugin/$(PluginShortName)/reload" ContinueOnError="true" />
   </Target>
 
   <Target Name="RemoveDevLink" AfterTargets="CoreClean" Condition="'$(DevLink)' == 'true'">

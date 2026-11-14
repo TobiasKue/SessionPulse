@@ -90,6 +90,10 @@ public class SessionPulsePlugin : Plugin
             this.activator = new WindowsWindowActivator(PluginLog.Info, this.scripts);
             this.scroller = new WindowsScrollToTop(this.scripts);
         }
+        else if (OperatingSystem.IsMacOS())
+        {
+            this.activator = new MacWindowActivator(PluginLog.Info);
+        }
 
         this.store = new SessionStore(statusDir, TimeProvider.System, PluginLog.Info);
         this.store.StartWatching();

@@ -1,4 +1,5 @@
 using System.Text;
+using SessionPulse.Core.Config;
 using SessionPulse.Core.Desktop;
 
 namespace SessionPulse.Core.Tests;
@@ -115,5 +116,27 @@ public class DesktopTests
 
         Assert.False(index.RescanIfDue());
         Assert.Empty(index.Sessions);
+    }
+
+    [Fact]
+    public void IndexFindsTheMacLayoutWithoutInstallFolder()
+    {
+        using var dir = new TempDir();
+        var code = dir.Combine("claude-code-sessions", "acc", "org");
+        Directory.CreateDirectory(code);
+        File.WriteAllText(Path.Combine(code, "local_m1.json"), """{"sessionId":"local_m1","cliSessionId":"hook-m","title":"Mac task"}""");
+        var index = new DesktopSessionIndex(dir.Path, new ManualTime(1000));
+
+        Assert.True(index.RescanIfDue());
+        Assert.Equal("Mac task", index.Find("hook-m")!.Title);
+    }
+
+    [Fact]
+    public void DefaultDataRootDependsOnThePlatform()
+    {
+        string? Env(string name) => name switch { "HOME" => "/Users/u", "LOCALAPPDATA" => @"C:\Users\u\AppData\Local", _ => null };
+
+        Assert.Equal(Path.Combine("/Users/u", "Library", "Application Support", "Claude"), DesktopSessionIndex.DefaultDataRoot(HostPlatform.MacOS, Env));
+        Assert.Equal(Path.Combine(@"C:\Users\u\AppData\Local", "Claude-Data"), DesktopSessionIndex.DefaultDataRoot(HostPlatform.Windows, Env));
     }
 }

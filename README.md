@@ -50,7 +50,8 @@ Nothing leaves your computer: no network access, no conversation content. See
 
 ## Requirements
 
-* Windows 10/11 (macOS is planned)
+* Windows 10/11, or macOS (new, device test pending: no dictation, no scrolling
+  scheduled runs to the top; in Terminal and iTerm2 the key selects the tab)
 * Claude Code in at least one of these: the Code tab of Claude Desktop, the
   `claude` command on Windows, or the `claude` command in WSL
 * For Claude on Windows: Git for Windows (Claude runs hooks in Git Bash)
@@ -119,6 +120,14 @@ differ; that's fine. If WSL can't start Windows programs (interop switched off
 in `/etc/wsl.conf`), set the folder yourself in `~/.bashrc` or `~/.profile`:
 `export SESSIONPULSE_DIR=/mnt/c/Users/<your Windows user>/.sessionpulse`.
 
+**macOS** (Claude Desktop and the `claude` command share `~/.claude`). Use the
+`settings.json` snippet above with your path (e.g. `/Users/<you>/SessionPulse`),
+or run `claude plugin marketplace add ~/SessionPulse` and
+`claude plugin install sessionpulse@sessionpulse`. The hook writes to
+`~/Library/Application Support/SessionPulse` and works with the bash 3.2 that
+macOS ships. The first key press on a Terminal or iTerm2 session asks for the
+Automation permission (Logi Plugin Service controlling the terminal).
+
 **Check:** send a prompt, then look for a new file in
 `%USERPROFILE%\.sessionpulse\sessions\` (in Windows Explorer, not from inside
 Claude: see [LESSONS](docs/LESSONS.md) #42).
@@ -134,7 +143,7 @@ Code-tab sessions: install it through one route only, never both (#47).
 ### Keypad plugin
 
 Double-click the `.lplug4` from the release and confirm the installer dialog
-(it likes to hide behind other windows). Or build it yourself on Windows
+(it likes to hide behind other windows). Or build it yourself on Windows or macOS
 (requires the .NET 10 SDK and Logi Options+ with Logi Plugin Service 6.4 or
 later):
 
@@ -293,6 +302,7 @@ test that parses those golden files, so hook and plugin can't drift apart.
 | M3 | Counter folders (working / waiting / done) | done |
 | M4 | Scheduled tasks | done |
 | M5 | Dictation (optional, Windows only) | built, device test pending |
+| M7 | macOS | built, device test pending |
 | M6 | Release pipeline | done ([docs/releasing.md](docs/releasing.md)) |
 
 ## License

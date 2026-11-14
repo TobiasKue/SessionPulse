@@ -15,8 +15,9 @@ version: @VERSION@
 author: Tobias Küpers
 copyright: Copyright (c) 2026 Tobias Küpers
 
-# Windows only for now (docs/architecture.md). Add pluginFolderMac once macOS is supported.
+# Same assemblies on both platforms. Dictation and scroll-to-top are Windows only (docs/architecture.md).
 pluginFolderWin: bin
+pluginFolderMac: bin
 
 # The docs list no device id for the MX Creative Keypad. LoupedeckCtFamily is the generator default
 # and worked for the prototype on the Keypad (docs/LESSONS.md #25). The device test plan checks it.
