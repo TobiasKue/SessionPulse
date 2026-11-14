@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # release.yml runs the same tests before publishing (a tag doesn't trigger this workflow).
+  workflow_call:
 
 permissions:
   contents: read
