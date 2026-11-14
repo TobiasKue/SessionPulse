@@ -56,6 +56,10 @@ All notable changes to this project are documented here. The format follows
   selects the session's Windows Terminal tab where Claude Code shows the
   session title, e.g. in WSL, instead of opening Claude Desktop.
 - Status file: optional fields `title`, `host`, `pid` and `wsl`.
+- macOS: the keypad plugin installs and runs on the Mac. A session key opens
+  the Claude Desktop session or brings the terminal app to the front, and
+  selects the tab in Terminal and iTerm2. The hook works with the bash 3.2
+  that macOS ships. Dictation and scrolling to the top stay Windows only.
 
 ### Changed
 
