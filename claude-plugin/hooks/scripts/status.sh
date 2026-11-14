@@ -13,17 +13,25 @@
 #   * Stay fast: this runs before and after every tool call. Only bash builtins
 #     on the hot path; the only external commands are `mv` (always), `mkdir`
 #     (first run only), `cat` (only when stdin exceeds the read limit), `grep`
-#     (once per turn, on Stop, for the title) and `cmd.exe` (WSL, first run only).
+#     (once per turn, on Stop, for the title), `cmd.exe` and maybe `tr` (WSL, first run only)
+#     and `date` (bash before 4.2 only, i.e. /bin/bash 3.2 on macOS).
+#   * Stay compatible with bash 3.2: on macOS, Claude Desktop runs hooks with
+#     /bin/bash (no read -N, no printf %(...)T, no C.UTF-8 locale).
 #   * Never search the file system.
 
 exec 3>&1 1>/dev/null 2>/dev/null
 
 # Character-wise string operations (label truncation) need a UTF-8 locale.
-export LC_ALL=C.UTF-8
+# macOS has no C.UTF-8, but always en_US.UTF-8.
+if [[ $OSTYPE == darwin* ]]; then export LC_ALL=en_US.UTF-8; else export LC_ALL=C.UTF-8; fi
 
 readonly SP_READ_LIMIT=4000   # characters of stdin to parse; tool_input can be huge
 readonly SP_FULL_LIMIT=200000 # upper bound for the rare cases that need the full payload
-readonly Q='"' BS=\\
+# Bash 3.2 mangles a quoted "/" in patterns and quoted replacements inside "...": use SL/BSL there.
+readonly Q='"' BS=\\ SL=/
+readonly BSL="$BS$SL"
+SP_OLD_BASH=0   # before 4.2: no printf %(...)T, no \u in printf %b
+(( BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] < 402 )) && SP_OLD_BASH=1
 
 SP_LABELS=1
 SP_LABEL_LEN=28
@@ -69,9 +77,32 @@ sp_onum() {
 sp_decode() {
     local s=$1
     s=${s//"$BS$Q"/"$Q"}
-    s=${s//"$BS/"/"/"}
+    s=${s//"$BSL"/"$SL"}
+    (( SP_OLD_BASH )) && [[ $s == *"$BS"u* ]] && sp_unicode_escapes "$s" && s=$REPLY
     printf -v s '%b' "$s"
     REPLY=${s//[[:cntrl:]]/ }
+}
+
+# Bash 3.2: \uXXXX (and surrogate pairs) -> UTF-8 as \0nnn octal escapes, which printf %b understands.
+sp_unicode_escapes() {
+    local s=$1 out='' re='^([^\\]*(\\[^u][^\\]*)*)\\u([0-9A-Fa-f]{4})(.*)$' c lo
+    while [[ $s =~ $re ]]; do
+        out+=${BASH_REMATCH[1]}
+        c=$((16#${BASH_REMATCH[3]}))
+        s=${BASH_REMATCH[4]}
+        if (( c >= 0xD800 && c < 0xDC00 )) && [[ $s =~ ^\\u([dD][c-fC-F][0-9A-Fa-f]{2})(.*)$ ]]; then
+            lo=$((16#${BASH_REMATCH[1]}))
+            s=${BASH_REMATCH[2]}
+            c=$(( 0x10000 + ((c - 0xD800) << 10) + (lo - 0xDC00) ))
+        fi
+        if (( c < 0x80 )); then printf -v c '\\0%o' "$c"
+        elif (( c < 0x800 )); then printf -v c '\\0%o\\0%o' $((0xC0 | c >> 6)) $((0x80 | (c & 0x3F)))
+        elif (( c < 0x10000 )); then printf -v c '\\0%o\\0%o\\0%o' $((0xE0 | c >> 12)) $((0x80 | (c >> 6 & 0x3F))) $((0x80 | (c & 0x3F)))
+        else printf -v c '\\0%o\\0%o\\0%o\\0%o' $((0xF0 | c >> 18)) $((0x80 | (c >> 12 & 0x3F))) $((0x80 | (c >> 6 & 0x3F))) $((0x80 | (c & 0x3F)))
+        fi
+        out+=$c
+    done
+    REPLY=$out$s
 }
 
 # Plain text -> JSON string content.
@@ -226,7 +257,7 @@ sp_wsl_dir() {
         if command -v wslpath > /dev/null; then
             d=$(wslpath -u "$w") || return 1
         else
-            d="/mnt/${BASH_REMATCH[1],,}/${BASH_REMATCH[2]//"$BS"/"/"}"   # default automount root
+            d="/mnt/$(printf '%s' "${BASH_REMATCH[1]}" | tr 'A-Z' 'a-z')/${BASH_REMATCH[2]//"$BS"/$SL}"   # default automount root
         fi
         d="${d%/}/.sessionpulse"
         mkdir -p "${cache%/*}" && printf '%s\n' "$d" > "$cache"
@@ -290,8 +321,8 @@ sp_read_config() {
 
 sp_main() {
     local input='' truncated=0
-    IFS= read -r -N "$SP_READ_LIMIT" input
-    (( ${#input} >= SP_READ_LIMIT )) && truncated=1
+    # -d '' -n instead of -N (bash 3.2). read succeeds only if it stopped at the limit, not at EOF.
+    IFS= read -r -d '' -n "$SP_READ_LIMIT" input && truncated=1
     [[ -n $input ]] || return 0
 
     sp_pstr session_id "$input"
@@ -319,7 +350,7 @@ sp_main() {
     fi
 
     local now
-    if [[ ${SESSIONPULSE_NOW:-} =~ ^[0-9]+$ ]]; then now=$SESSIONPULSE_NOW; else printf -v now '%(%s)T' -1; fi
+    if [[ ${SESSIONPULSE_NOW:-} =~ ^[0-9]+$ ]]; then now=$SESSIONPULSE_NOW; elif (( ! SP_OLD_BASH )); then printf -v now '%(%s)T' -1; else now=$(date +%s); fi
 
     sp_status_dir
     local dir=$REPLY
@@ -527,7 +558,7 @@ sp_main() {
     # --- title: once per turn, it changes rarely and needs a grep ---
     if [[ $event == Stop ]] && sp_ptext transcript_path "$input" 1000 && [[ -n $REPLY ]]; then
         sp_decode "$REPLY"
-        if sp_transcript_title "${REPLY//"$BS"/"/"}"; then
+        if sp_transcript_title "${REPLY//"$BS"/$SL}"; then
             sp_decode "$REPLY"
             sp_label "$REPLY" 80; title=$REPLY
         fi

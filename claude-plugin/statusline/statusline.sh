@@ -12,11 +12,11 @@
 # every SessionStart, so settings can point at a stable path.
 
 exec 2>/dev/null
-export LC_ALL=C.UTF-8
+if [[ $OSTYPE == darwin* ]]; then export LC_ALL=en_US.UTF-8; else export LC_ALL=C.UTF-8; fi  # bash 3.2 on macOS: no C.UTF-8
 readonly BS=\\
 
 input=''
-IFS= read -r -d '' -N 65536 input
+IFS= read -r -d '' -n 65536 input   # -n, not -N: bash 3.2 on macOS
 
 # Same default as the hook (sp_status_dir in hooks/scripts/status.sh).
 dir=${SESSIONPULSE_DIR:-}
@@ -51,7 +51,9 @@ usage_window() {
 }
 
 now=${SESSIONPULSE_NOW:-}
-[[ $now =~ ^[0-9]+$ ]] || printf -v now '%(%s)T' -1
+if [[ ! $now =~ ^[0-9]+$ ]]; then
+    if (( BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 402 )); then printf -v now '%(%s)T' -1; else now=$(date +%s); fi
+fi
 
 json='' line=''
 for pair in five_hour:fiveHour:5h seven_day:sevenDay:7d spend_limit:spend:\$; do

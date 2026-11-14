@@ -15,11 +15,14 @@
 # Payload paths such as transcript_path are relative to tests/hook/.
 #
 # Environment: HOOK_MAX_AVG_MS (default 150) limits the average hook run time.
+#              HOOK_BASH (default bash) runs hook and status line with another bash,
+#              e.g. HOOK_BASH=/bin/bash for bash 3.2 on macOS.
 
 set -u
 cd "$(dirname "$0")" || exit 1
 HOOK="$(cd ../../claude-plugin/hooks/scripts && pwd)/status.sh"
 UPDATE=0
+SH=${HOOK_BASH:-bash}
 [[ ${1:-} == --update ]] && UPDATE=1
 
 WORK=$(mktemp -d)
@@ -35,7 +38,7 @@ EXTRA=()   # per-case variables from cases/<name>/env
 
 # run_hook <status dir> <now> <payload file>; sets OUT (stdout+stderr) and RC
 run_hook() {
-    OUT=$("${CLEAN[@]}" "${EXTRA[@]}" SESSIONPULSE_DIR="$1" SESSIONPULSE_NOW="$2" bash "$HOOK" < "$3" 2>&1)
+    OUT=$("${CLEAN[@]}" ${EXTRA[@]+"${EXTRA[@]}"} SESSIONPULSE_DIR="$1" SESSIONPULSE_NOW="$2" "$SH" "$HOOK" < "$3" 2>&1)
     RC=$?
 }
 
@@ -82,11 +85,11 @@ for case_dir in cases/*/; do
 
     expected=()
     [[ -d $case_dir/expected ]] && for f in "$case_dir"/expected/*.json; do expected+=("$(basename "$f")"); done
-    if [[ "${actual[*]}" != "${expected[*]}" ]]; then
-        fail "$name: files [${actual[*]}], expected [${expected[*]}]"
+    if [[ "${actual[*]-}" != "${expected[*]-}" ]]; then
+        fail "$name: files [${actual[*]-}], expected [${expected[*]-}]"
         ok=0
     else
-        for f in "${expected[@]}"; do
+        for f in ${expected[@]+"${expected[@]}"}; do
             if ! diff -u "$case_dir/expected/$f" "$dir/sessions/$f" > "$WORK/diff"; then
                 fail "$name/$f differs:"; cat "$WORK/diff"; ok=0
             fi
@@ -135,7 +138,7 @@ robust "status dir is a file" "$WORK/valid" "$WORK/afile"
 big=$(printf '%*s' 1000000 '' | tr ' ' 'x')
 payload "$WORK/big" '{"session_id":"big-1","cwd":"/home/user/projects/demo","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/tmp/f","content":"'"$big"'"}}'
 d="$WORK/bigdir"
-OUT=$( (cat "$WORK/big"; echo "writer-status=$?" >&2) 2>"$WORK/writer" | "${CLEAN[@]}" SESSIONPULSE_DIR="$d" bash "$HOOK" 2>&1)
+OUT=$( (cat "$WORK/big"; echo "writer-status=$?" >&2) 2>"$WORK/writer" | "${CLEAN[@]}" SESSIONPULSE_DIR="$d" "$SH" "$HOOK" 2>&1)
 RC=$?
 if check_silent "1 MB payload"; then
     if ! grep -q 'writer-status=0' "$WORK/writer"; then
@@ -185,7 +188,7 @@ approval_case() {
     ) &
     local keypad=$!
     local out
-    out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" SESSIONPULSE_NOW=1700000000 bash "$HOOK" < "$d/payload" 2>/dev/null)
+    out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" SESSIONPULSE_NOW=1700000000 "$SH" "$HOOK" < "$d/payload" 2>/dev/null)
     RC=$?
     wait "$keypad"
     if [[ $RC -ne 0 ]]; then fail "approval $label: exit $RC"; return; fi
@@ -221,7 +224,7 @@ fi
 STATUSLINE="$(cd ../../claude-plugin/statusline && pwd)/statusline.sh"
 d="$WORK/statusline"; mkdir -p "$d"
 payload "$d/full" '{"session_id":"s","model":{"display_name":"Opus"},"rate_limits":{"five_hour":{"used_percentage":23.5,"resets_at":1738425600},"seven_day":{"used_percentage":41,"resets_at":1738857600}},"context_window":{"used_percentage":12}}'
-out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" SESSIONPULSE_NOW=1700000000 bash "$STATUSLINE" < "$d/full")
+out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" SESSIONPULSE_NOW=1700000000 "$SH" "$STATUSLINE" < "$d/full")
 usage_expected='{"v":1,"updated":1700000000,"fiveHour":{"pct":23.5,"resetsAt":1738425600},"sevenDay":{"pct":41,"resetsAt":1738857600}}'
 if [[ $(cat "$d/usage.json" 2>/dev/null) != "$usage_expected" ]]; then fail "statusline usage.json: $(cat "$d/usage.json" 2>&1)"
 elif [[ $out != "5h 23% · 7d 41%" ]]; then fail "statusline output: '$out'"
@@ -229,13 +232,13 @@ else pass; fi
 
 # Without rate limits (API key, or before the first response) the last values stay.
 payload "$d/none" '{"session_id":"s","model":{"display_name":"Opus"}}'
-out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" SESSIONPULSE_NOW=1700000100 bash "$STATUSLINE" < "$d/none")
+out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" SESSIONPULSE_NOW=1700000100 "$SH" "$STATUSLINE" < "$d/none")
 if [[ -n $out || $(cat "$d/usage.json") != "$usage_expected" ]]; then fail "statusline without limits changed state: '$out'"; else pass; fi
 
 # STATUSLINE_CHAIN passes the same input on to an existing status line.
 # shellcheck disable=SC2016 # expanded later by the helper, not here
 printf 'STATUSLINE_CHAIN=read -r -d "" x; echo "chained ${#x}"\r\n' > "$d/sessionpulse.conf"
-out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" bash "$STATUSLINE" < "$d/full")
+out=$("${CLEAN[@]}" SESSIONPULSE_DIR="$d" "$SH" "$STATUSLINE" < "$d/full")
 if [[ $out != "chained $(wc -c < "$d/full" | tr -d ' ')" ]]; then fail "statusline chain: '$out'"; else pass; fi
 
 # The hook keeps a copy of the helper at <status dir>/statusline.sh.
@@ -253,14 +256,14 @@ fi
 w="$WORK/winprofile"
 win_env=(env -u SESSIONPULSE_DIR LOCALAPPDATA="$w/AppData/Local" USERPROFILE="$w" HOME="$WORK/winhome")
 payload "$WORK/default" '{"session_id":"def-1","cwd":"/tmp","hook_event_name":"Stop"}'
-OUT=$("${win_env[@]}" bash "$HOOK" < "$WORK/default" 2>&1)
+OUT=$("${win_env[@]}" "$SH" "$HOOK" < "$WORK/default" 2>&1)
 RC=$?
 if check_silent "windows default dir"; then
     if [[ ! -f $w/.sessionpulse/sessions/def-1.json ]]; then fail "windows default dir: no status file below $w/.sessionpulse"
     elif [[ -e $w/AppData ]]; then fail "windows default dir: wrote below AppData"
     else pass; fi
 fi
-"${win_env[@]}" SESSIONPULSE_NOW=1700000000 bash "$STATUSLINE" < "$WORK/statusline/full" > /dev/null
+"${win_env[@]}" SESSIONPULSE_NOW=1700000000 "$SH" "$STATUSLINE" < "$WORK/statusline/full" > /dev/null
 if [[ -f $w/.sessionpulse/usage.json ]]; then pass; else fail "status line helper: no usage.json below $w/.sessionpulse"; fi
 
 # WSL (WSL_DISTRO_NAME set): the Windows profile, asked once from cmd.exe and cached. A fake cmd.exe
@@ -274,7 +277,7 @@ EOF
 chmod +x "$fake/cmd.exe"
 wh="$WORK/wslhome"; mkdir -p "$wh"
 wsl_env=(env -u SESSIONPULSE_DIR -u LOCALAPPDATA -u USERPROFILE -u XDG_CACHE_HOME -u CLAUDE_PID WSL_DISTRO_NAME=Ubuntu HOME="$wh" PATH="$fake:$PATH")
-OUT=$("${wsl_env[@]}" bash "$HOOK" < "$WORK/default" 2>&1)
+OUT=$("${wsl_env[@]}" "$SH" "$HOOK" < "$WORK/default" 2>&1)
 RC=$?
 if check_silent "wsl windows dir"; then
     cached=$(cat "$wh/.cache/sessionpulse/windows-dir" 2>/dev/null)
@@ -284,7 +287,7 @@ if check_silent "wsl windows dir"; then
 fi
 # With the cache in place, cmd.exe is not asked again and the cached directory is used.
 printf '%s\n' "$WORK/wslwin/.sessionpulse" > "$wh/.cache/sessionpulse/windows-dir"
-"${wsl_env[@]}" CLAUDE_PID=4242 bash "$HOOK" < "$WORK/default" > /dev/null 2>&1
+"${wsl_env[@]}" CLAUDE_PID=4242 "$SH" "$HOOK" < "$WORK/default" > /dev/null 2>&1
 calls=$(wc -l < "$WORK/cmd-calls" | tr -d ' ')
 if [[ $calls != 1 ]]; then fail "wsl windows dir: cmd.exe asked $calls times"
 elif ! grep -q '"wsl":"Ubuntu"}$' "$WORK/wslwin/.sessionpulse/sessions/def-1.json" 2>/dev/null; then
@@ -303,7 +306,7 @@ for kind in small large; do
     f=${!kind} n=30
     start=$EPOCHREALTIME
     for ((k = 0; k < n; k++)); do
-        "${CLEAN[@]}" SESSIONPULSE_DIR="$WORK/perf" bash "$HOOK" < "$f" > /dev/null 2>&1
+        "${CLEAN[@]}" SESSIONPULSE_DIR="$WORK/perf" "$SH" "$HOOK" < "$f" > /dev/null 2>&1
     done
     end=$EPOCHREALTIME
     avg=$(( (${end//[.,]/} - ${start//[.,]/}) / n / 1000 ))

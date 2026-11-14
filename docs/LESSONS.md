@@ -343,3 +343,9 @@ Please add to this file when you find something new.
     the main agent.** They carry `agent_id` (also `PermissionRequest`; seen with
     Claude Code 2.1.316), the main agent's don't. Without looking at it, a
     subagent's next tool call hides a question the main agent is waiting on.
+63. **macOS ships bash 3.2 as `/bin/bash`, and the hook fails there silently.**
+    Without Homebrew in its PATH (Claude Desktop as a GUI app), `bash` is 3.2:
+    no `read -N`, no `printf '%(%s)T'`, no `\u` in `printf %b`, no `${x,,}`, and
+    a quoted `/` in a pattern or a quoted replacement inside `"..."` is taken
+    literally. macOS also has no `C.UTF-8` locale. The hook still exits 0 but
+    writes nothing. CI runs the hook tests with `HOOK_BASH=/bin/bash` on macOS.
