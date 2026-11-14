@@ -5,6 +5,6 @@
     <PackageVersion Include="LogiPluginApi" Version="6.4.2.3567" />
     <!-- Only for tools/KeyPreview: SkiaSharp native library matching LogiPluginApi's SkiaSharp 2.88.8. -->
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8" />
-    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
   </ItemGroup>
 </Project>
