@@ -257,7 +257,7 @@ sp_wsl_dir() {
         if command -v wslpath > /dev/null; then
             d=$(wslpath -u "$w") || return 1
         else
-            d="/mnt/$(printf '%s' "${BASH_REMATCH[1]}" | tr 'A-Z' 'a-z')/${BASH_REMATCH[2]//"$BS"/$SL}"   # default automount root
+            d="/mnt/$(printf '%s' "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')/${BASH_REMATCH[2]//"$BS"/$SL}"   # default automount root
         fi
         d="${d%/}/.sessionpulse"
         mkdir -p "${cache%/*}" && printf '%s\n' "$d" > "$cache"

@@ -29,6 +29,12 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 FAILED=0 PASSED=0
 
+# Microseconds since the epoch; bash 3.2 (macOS) has no EPOCHREALTIME.
+now_us() {
+    if [[ -n ${EPOCHREALTIME:-} ]]; then REPLY=${EPOCHREALTIME//[.,]/}
+    else REPLY=$(perl -MTime::HiRes=time -e 'printf "%d", time() * 1000000'); fi
+}
+
 pass() { PASSED=$((PASSED + 1)); }
 fail() { FAILED=$((FAILED + 1)); printf 'FAIL %s\n' "$*"; }
 
@@ -206,9 +212,9 @@ approval_case session session Bash "rm -rf build" "${decision_json}"'\{"behavior
 approval_case always always Bash "rm -rf build" '"destination":"localSettings"'
 approval_case deny deny Bash "git push --force" '"behavior":"deny","message":"Denied on the SessionPulse keypad."' '"risk":"high"'
 approval_case ask ask Bash "ls" '^$'
-start=$EPOCHREALTIME
+now_us; start=$REPLY
 approval_case timeout - Bash "ls" '^$'
-elapsed=$(( (${EPOCHREALTIME//[.,]/} - ${start//[.,]/}) / 1000000 ))
+now_us; elapsed=$(( (REPLY - start) / 1000000 ))
 if (( elapsed < 4 || elapsed > 9 )); then fail "approval timeout took ${elapsed}s, expected about 5s"; else pass; fi
 
 # Questions and plan approval are never held.
@@ -304,12 +310,12 @@ large="$WORK/large"
 payload "$large" '{"session_id":"perf-2","cwd":"/home/user/projects/demo","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"content":"'"${big:0:200000}"'"}}'
 for kind in small large; do
     f=${!kind} n=30
-    start=$EPOCHREALTIME
+    now_us; start=$REPLY
     for ((k = 0; k < n; k++)); do
         "${CLEAN[@]}" SESSIONPULSE_DIR="$WORK/perf" "$SH" "$HOOK" < "$f" > /dev/null 2>&1
     done
-    end=$EPOCHREALTIME
-    avg=$(( (${end//[.,]/} - ${start//[.,]/}) / n / 1000 ))
+    now_us
+    avg=$(( (REPLY - start) / n / 1000 ))
     printf 'perf: %-5s payload: %3d ms per run (limit %d ms)\n' "$kind" "$avg" "$max_ms"
     if (( avg > max_ms )); then fail "perf $kind: $avg ms > $max_ms ms"; else pass; fi
 done
