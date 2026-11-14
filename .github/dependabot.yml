@@ -1,0 +1,11 @@
+# Keeps the pinned actions (commit SHAs) and the NuGet packages up to date.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: monthly
