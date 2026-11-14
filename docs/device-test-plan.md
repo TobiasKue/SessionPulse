@@ -1,7 +1,7 @@
 # Device test plan
 
 First test of SessionPulse on real hardware (Windows, Claude Desktop, Logi
-Options+, MX Creative Keypad). Everything below was built and unit-tested
+Options+, MX Creative Keypad; macOS in section 8). Everything below was built and unit-tested
 without a device; this list covers what could not be tested that way.
 
 Tick the boxes, and write anything unexpected into **Findings** at the end
@@ -149,6 +149,27 @@ Tick the boxes, and write anything unexpected into **Findings** at the end
       pane without focus, or of a session without a title yet, brings the
       window to the front (the pane stays as it is).
 - [ ] Hook speed in WSL (writing to `/mnt/c`): tool calls don't feel slower.
+
+## 8. macOS
+
+Sections 1–5 apply on the Mac too, with these paths: logs in
+`~/Library/Application Support/Logi/LogiPluginService/Logs/plugin_logs/`,
+status files in `~/Library/Application Support/SessionPulse/sessions/`.
+Dictation and scrolling to the top are Windows only.
+
+- [x] Hook installed with `claude plugin install`; a fresh session writes
+      `host` and `pid` (bash 3.2 at `/bin/bash`).
+- [x] `.lplug4` installs; log shows `SessionPulse loaded` with the macOS paths.
+- [x] Terminal session: the key brings Terminal to the front and selects the
+      right tab.
+- [x] Code tab of Claude Desktop: the key opens the right session.
+- [ ] iTerm2 session: the right tab is selected (asks for Automation once).
+- [ ] VS Code or another terminal: the app comes to the front.
+- [ ] Claude Desktop started from the Dock (no Homebrew in PATH): status files
+      are still written.
+- [ ] Cowork session (where it runs locally) appears.
+- [ ] Waiting session after `/rename`: the key shows the new title after the
+      next turn and still opens the session.
 
 ## Findings
 
