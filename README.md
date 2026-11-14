@@ -302,7 +302,7 @@ test that parses those golden files, so hook and plugin can't drift apart.
 | M3 | Counter folders (working / waiting / done) | done |
 | M4 | Scheduled tasks | done |
 | M5 | Dictation (optional, Windows only) | built, device test pending |
-| M7 | macOS | built, device test pending |
+| M7 | macOS | session keys tested on device (Terminal tab, Code tab) |
 | M6 | Release pipeline | done ([docs/releasing.md](docs/releasing.md)) |
 
 ## License
