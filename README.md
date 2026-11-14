@@ -31,7 +31,7 @@ it, in Claude Desktop or in its terminal.
 
 > **Status: early development.** All planned features are implemented. Testing
 > on a real device has started but is not finished, so expect rough edges. See
-> [the milestones](#roadmap) and the [device test plan](docs/device-test-plan.md).
+> [the milestones](#roadmap).
 
 SessionPulse is an independent, source-available project. It is not affiliated with
 or endorsed by Anthropic or Logitech. "Claude" and "Logitech" are mentioned
